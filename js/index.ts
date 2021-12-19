@@ -122,9 +122,9 @@ class BubbleShooter {
     for (let row = 0; row < 5; row++) {
       for (let col = 0; col < PLAYGROUND_WIDTH; col++) {
         const offset = row % 2 !== 0 ? 0.5 : 0;
-        const hashedCoords = this.coord2Index(new Vec2D(col + offset, row));
+        const index = this.coord2Index(new Vec2D(col + offset, row));
         
-        bubbleGrid[hashedCoords] = this.pickBulletColor();
+        bubbleGrid[index] = this.pickBulletColor();
       }
     }
 
