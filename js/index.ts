@@ -4,6 +4,9 @@ const SCALE = 10;
 const RADIUS = 1;
 const PLAYGROUND_WIDTH = 40;
 const PLAYGROUND_HEIGHT = 30;
+const CANVAS_WIDTH = (PLAYGROUND_WIDTH + 0.5) * 2 * RADIUS * SCALE;
+const CANVAS_HEIGHT = PLAYGROUND_HEIGHT * 2 * RADIUS * SCALE;
+
 
 enum Color {
   Red = "red",
@@ -46,8 +49,8 @@ class BubbleShooter {
   }
 
   private setCanvasSize(canvas: HTMLCanvasElement) {
-    canvas.width = 800;
-    canvas.height = 600;
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
   }
 
   private outlineCanvas(canvas: HTMLCanvasElement) {
