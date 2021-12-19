@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 const SCALE = 10;
 const RADIUS = 1;
@@ -9,8 +9,8 @@ const CANVAS_HEIGHT = PLAYGROUND_HEIGHT * 2 * RADIUS * SCALE;
 
 
 enum Color {
-  Orange = "#f80",
-  White = "#ffffff",
+  Orange = '#f80',
+  White = '#ffffff',
   Blue = '#36C1D4',
 }
 
@@ -84,32 +84,13 @@ class BubbleShooter {
     this.drawBullet();
   }
 
-  private rotate(point: Vec2D, direction: Direction): Vec2D {
-    let matrix: Matrix;
-
-    switch (direction) {
-      case Direction.Left:
-        matrix = MATRIX_ROTATE_COUNTERCLOCKWISE;
-        break;
-      case Direction.Right:
-        matrix = MATRIX_ROTATE_CLOCKWISE;
-        break;
-    }
-
-    const [col1, col2] = matrix;
-    const rotCol1 = col1.map(coord => coord * point.x);
-    const rotCol2 = col2.map(coord => coord * point.y);
-
-    return new Vec2D(rotCol1[0] + rotCol2[0], rotCol1[1] + rotCol2[1]);
-  }
-
   private setCanvasSize(canvas: HTMLCanvasElement) {
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
   }
 
   private setCanvasColor(canvas: HTMLCanvasElement) {
-    canvas.style.background = "#0f0f23";
+    canvas.style.background = '#0f0f23';
   }
 
   private outlineCanvas(canvas: HTMLCanvasElement) {
@@ -117,7 +98,7 @@ class BubbleShooter {
   }
 
   private createBubbleGrid(): BubbleGrid {
-    let bubbleGrid: BubbleGrid = {};
+    const bubbleGrid: BubbleGrid = {};
 
     for (let row = 0; row < 5; row++) {
       for (let col = 0; col < PLAYGROUND_WIDTH; col++) {
@@ -156,8 +137,7 @@ class BubbleShooter {
       );
       this.ctx.fillStyle = color;
       this.ctx.fill();
-      this.ctx.stroke();
-      this.ctx.closePath;
+      this.ctx.closePath();
     }
   }
 
@@ -168,8 +148,8 @@ class BubbleShooter {
     this.ctx.beginPath();
     this.ctx.moveTo(initialPosition.x, initialPosition.y + (2 * SCALE * (PLAYGROUND_HEIGHT / 2 - 0.5)));
     this.ctx.lineTo(gunPosition.x, gunPosition.y + (2 * SCALE * (PLAYGROUND_HEIGHT / 2)));
-    this.ctx.strokeStyle = '#ffffff';
-    this.ctx.stroke()
+    this.ctx.strokeStyle = Color.White;
+    this.ctx.stroke();
     this.ctx.closePath();
   }
 
@@ -199,7 +179,7 @@ class BubbleShooter {
   }
 
   private coord2Index(coord: Vec2D): string {
-    return `${coord.x} ${coord.y}`
+    return `${coord.x} ${coord.y}`;
   }
 
   private index2Coord(index: string): Vec2D {
@@ -210,20 +190,46 @@ class BubbleShooter {
   private vectorScalarMul(vector: Vec2D, scalar: number) {
     return new Vec2D(vector.x * scalar, vector.y * scalar);
   }
+
+  private matrixVectorMul(matrix: Matrix, vector: Vec2D): Vec2D {
+    const [col1, col2] = matrix;
+    const rotatedCol1 = col1.map(coord => coord * vector.x);
+    const rotatedCol2 = col2.map(coord => coord * vector.y);
+  
+    return new Vec2D(
+      rotatedCol1[0] + rotatedCol2[0],
+      rotatedCol1[1] + rotatedCol2[1]
+    );
+  }
+
+  private rotate(point: Vec2D, direction: Direction): Vec2D {
+    let matrix: Matrix;
+
+    switch (direction) {
+    case Direction.Left:
+      matrix = MATRIX_ROTATE_COUNTERCLOCKWISE;
+      break;
+    case Direction.Right:
+      matrix = MATRIX_ROTATE_CLOCKWISE;
+      break;
+    }
+
+    return this.matrixVectorMul(matrix, point);
+  }
 }
 
 const main = () => {
   const game = new BubbleShooter();
   document.addEventListener('keydown', (event) => {
     switch (event.code) {
-      case "ArrowLeft":
-        game.rotateGun(Direction.Left);
-        game.reDraw();
-        break;
-      case "ArrowRight":
-        game.rotateGun(Direction.Right);
-        game.reDraw();
-        break;
+    case 'ArrowLeft':
+      game.rotateGun(Direction.Left);
+      game.reDraw();
+      break;
+    case 'ArrowRight':
+      game.rotateGun(Direction.Right);
+      game.reDraw();
+      break;
     }
   });
 };
