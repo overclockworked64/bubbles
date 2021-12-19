@@ -15,9 +15,26 @@ enum Color {
   Yellow = "yellow",
 }
 
+enum Direction {
+  Left,
+  Right,
+}
+
 type BubbleGrid = {
   [key: string]: Color;
 };
+
+type Matrix = number[][];
+
+const MATRIX_ROTATE_COUNTERCLOCKWISE: Matrix = [
+  [Math.cos(Math.PI / 90), Math.sin(Math.PI / 90)],
+  [-Math.sin(Math.PI / 90), Math.cos(Math.PI / 90)],
+];
+
+const MATRIX_ROTATE_CLOCKWISE: Matrix = [
+  [Math.cos(Math.PI / 90), -Math.sin(Math.PI / 90)],
+  [Math.sin(Math.PI / 90), Math.cos(Math.PI / 90)],
+];
 
 class Vec2D {
   x: number;
@@ -29,12 +46,12 @@ class Vec2D {
   }
 }
 
-
 class BubbleShooter {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
 
-  grid: BubbleGrid;
+  private grid: BubbleGrid;
+  private gun: Vec2D;
 
   constructor() {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -45,7 +62,40 @@ class BubbleShooter {
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 
     this.grid = this.createBubbleGrid();
+    this.gun = this.createGun();
+
     this.drawBubbles();
+    this.drawGun();
+  }
+
+  public rotateGun(direction: Direction) {
+      this.gun = this.rotate(this.gun, direction);    
+      this.drawGun();
+  }
+
+  public reDraw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawBubbles();
+    this.drawGun();
+  }
+
+  private rotate(point: Vec2D, direction: Direction): Vec2D {
+    let matrix: Matrix;
+
+    switch (direction) {
+      case Direction.Left:
+        matrix = MATRIX_ROTATE_COUNTERCLOCKWISE;
+        break;
+      case Direction.Right:
+        matrix = MATRIX_ROTATE_CLOCKWISE;
+        break;
+    }
+
+    const [col1, col2] = matrix;
+    const rotCol1 = col1.map(coord => coord * point.x);
+    const rotCol2 = col2.map(coord => coord * point.y);
+
+    return new Vec2D(rotCol1[0] + rotCol2[0], rotCol1[1] + rotCol2[1]);
   }
 
   private setCanvasSize(canvas: HTMLCanvasElement) {
@@ -72,6 +122,10 @@ class BubbleShooter {
     return bubbleGrid;
   }
 
+  private createGun(): Vec2D {
+    return new Vec2D(0, 1);
+  }
+
   private drawBubbles() {
     for (const [coord, color] of Object.entries(this.grid)) {
       const c = this.index2Coord(coord);
@@ -79,7 +133,7 @@ class BubbleShooter {
           
       this.ctx.beginPath();
       this.ctx.arc(
-        gamifiedCoords.x + c.x * SCALE, gamifiedCoords.y + c.y * SCALE,
+        gamifiedCoords.x + RADIUS * SCALE, gamifiedCoords.y + RADIUS * SCALE,
         RADIUS * SCALE,
         0, 2 * Math.PI,
       );
@@ -90,10 +144,28 @@ class BubbleShooter {
     }
   }
 
+  private drawGun() {
+    const initialPosition = this.math2Canvas(new Vec2D(0, 0));
+    const gunPosition = this.math2Canvas(this.gun);
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(initialPosition.x, initialPosition.y);
+    this.ctx.lineTo(gunPosition.x, gunPosition.y);
+    this.ctx.stroke()
+    this.ctx.closePath();
+  }
+
+  private math2Canvas(vector: Vec2D): Vec2D {
+    return new Vec2D(
+      2 * SCALE * vector.x + (2 * SCALE * PLAYGROUND_WIDTH / 2),
+      2 * SCALE * -vector.y + (2 * SCALE * PLAYGROUND_HEIGHT),
+    );
+  }
+
   private game2Canvas(vector: Vec2D): Vec2D {
     return new Vec2D(
-      SCALE * (vector.x + RADIUS),
-      SCALE * (vector.y + RADIUS), 
+      2 * SCALE * vector.x,
+      2 * SCALE * vector.y, 
     );
   }
 
@@ -109,6 +181,18 @@ class BubbleShooter {
 
 const main = () => {
   const game = new BubbleShooter();
+  document.addEventListener('keydown', (event) => {
+    switch (event.code) {
+      case "ArrowLeft":
+        game.rotateGun(Direction.Left);
+        game.reDraw();
+        break;
+      case "ArrowRight":
+        game.rotateGun(Direction.Right);
+        game.reDraw();
+        break;
+    }
+  });
 };
 
 document.addEventListener('DOMContentLoaded', main);
