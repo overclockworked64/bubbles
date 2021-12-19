@@ -9,10 +9,9 @@ const CANVAS_HEIGHT = PLAYGROUND_HEIGHT * 2 * RADIUS * SCALE;
 
 
 enum Color {
-  Red = "red",
-  Green = "green",
-  Blue = "blue",
-  Yellow = "yellow",
+  Orange = "#f80",
+  White = "#ffffff",
+  Blue = '#36C1D4',
 }
 
 enum Direction {
@@ -59,6 +58,7 @@ class BubbleShooter {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
     this.setCanvasSize(this.canvas);
+    this.setCanvasColor(this.canvas);
     this.outlineCanvas(this.canvas);
 
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -74,8 +74,7 @@ class BubbleShooter {
   }
 
   public rotateGun(direction: Direction) {
-      this.gun = this.rotate(this.gun, direction);    
-      this.drawGun();
+    this.gun = this.rotate(this.gun, direction);
   }
 
   public reDraw() {
@@ -109,6 +108,10 @@ class BubbleShooter {
     canvas.height = CANVAS_HEIGHT;
   }
 
+  private setCanvasColor(canvas: HTMLCanvasElement) {
+    canvas.style.background = "#0f0f23";
+  }
+
   private outlineCanvas(canvas: HTMLCanvasElement) {
     canvas.style.border = '3px solid black';
   }
@@ -121,7 +124,7 @@ class BubbleShooter {
         const offset = row % 2 !== 0 ? 0.5 : 0;
         const hashedCoords = this.coord2Index(new Vec2D(col + offset, row));
         
-        bubbleGrid[hashedCoords] = _.sample(Object.keys(Color)) as Color;
+        bubbleGrid[hashedCoords] = this.pickBulletColor();
       }
     }
 
@@ -137,7 +140,7 @@ class BubbleShooter {
   }
 
   private pickBulletColor() {
-    return _.sample(Object.keys(Color)) as Color;
+    return _.sample(Object.values(Color)) as Color;
   }
 
   private drawBubbles() {
@@ -160,11 +163,12 @@ class BubbleShooter {
 
   private drawGun() {
     const initialPosition = this.math2Canvas(new Vec2D(0, 0));
-    const gunPosition = this.math2Canvas(this.vectorScalarMul(this.gun, 5));
+    const gunPosition = this.math2Canvas(this.vectorScalarMul(this.gun, 10));
         
     this.ctx.beginPath();
-    this.ctx.moveTo(initialPosition.x, initialPosition.y);
-    this.ctx.lineTo(gunPosition.x, gunPosition.y);
+    this.ctx.moveTo(initialPosition.x, initialPosition.y + (2 * SCALE * (PLAYGROUND_HEIGHT / 2 - 0.5)));
+    this.ctx.lineTo(gunPosition.x, gunPosition.y + (2 * SCALE * (PLAYGROUND_HEIGHT / 2)));
+    this.ctx.strokeStyle = '#ffffff';
     this.ctx.stroke()
     this.ctx.closePath();
   }
@@ -183,7 +187,7 @@ class BubbleShooter {
   private math2Canvas(vector: Vec2D): Vec2D {
     return new Vec2D(
       (2 * SCALE) * (vector.x + (PLAYGROUND_WIDTH / 2)),
-      (2 * SCALE) * (-vector.y + PLAYGROUND_HEIGHT),
+      (2 * SCALE) * (-vector.y + PLAYGROUND_HEIGHT / 2),
     );
   }
 
