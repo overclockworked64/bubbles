@@ -52,6 +52,8 @@ class BubbleShooter {
 
   private grid: BubbleGrid;
   private gun: Vec2D;
+  private bullet: Vec2D;
+  private bulletColor: Color;
 
   constructor() {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -63,9 +65,12 @@ class BubbleShooter {
 
     this.grid = this.createBubbleGrid();
     this.gun = this.createGun();
+    this.bullet = this.createBullet();
+    this.bulletColor = this.pickBulletColor();
 
     this.drawBubbles();
     this.drawGun();
+    this.drawBullet();
   }
 
   public rotateGun(direction: Direction) {
@@ -77,6 +82,7 @@ class BubbleShooter {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawBubbles();
     this.drawGun();
+    this.drawBullet();
   }
 
   private rotate(point: Vec2D, direction: Direction): Vec2D {
@@ -126,6 +132,14 @@ class BubbleShooter {
     return new Vec2D(0, 1);
   }
 
+  private createBullet(): Vec2D {
+    return new Vec2D(PLAYGROUND_WIDTH / 2, PLAYGROUND_HEIGHT - 0.5);
+  }
+
+  private pickBulletColor() {
+    return _.sample(Object.keys(Color)) as Color;
+  }
+
   private drawBubbles() {
     for (const [coord, color] of Object.entries(this.grid)) {
       const c = this.index2Coord(coord);
@@ -146,8 +160,8 @@ class BubbleShooter {
 
   private drawGun() {
     const initialPosition = this.math2Canvas(new Vec2D(0, 0));
-    const gunPosition = this.math2Canvas(this.gun);
-    
+    const gunPosition = this.math2Canvas(this.vectorScalarMul(this.gun, 5));
+        
     this.ctx.beginPath();
     this.ctx.moveTo(initialPosition.x, initialPosition.y);
     this.ctx.lineTo(gunPosition.x, gunPosition.y);
@@ -155,10 +169,21 @@ class BubbleShooter {
     this.ctx.closePath();
   }
 
+  private drawBullet() {
+    const bulletCoords = this.game2Canvas(this.bullet);
+
+    this.ctx.beginPath();
+    this.ctx.arc(bulletCoords.x, bulletCoords.y, SCALE * RADIUS, 0, 2 * Math.PI);
+    this.ctx.fillStyle = this.bulletColor;
+    this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.closePath();
+  }
+
   private math2Canvas(vector: Vec2D): Vec2D {
     return new Vec2D(
-      2 * SCALE * vector.x + (2 * SCALE * PLAYGROUND_WIDTH / 2),
-      2 * SCALE * -vector.y + (2 * SCALE * PLAYGROUND_HEIGHT),
+      (2 * SCALE) * (vector.x + (PLAYGROUND_WIDTH / 2)),
+      (2 * SCALE) * (-vector.y + PLAYGROUND_HEIGHT),
     );
   }
 
@@ -176,6 +201,10 @@ class BubbleShooter {
   private index2Coord(index: string): Vec2D {
     const [x, y] = index.split(' ').map(c => parseFloat(c));
     return new Vec2D(x, y);
+  }
+
+  private vectorScalarMul(vector: Vec2D, scalar: number) {
+    return new Vec2D(vector.x * scalar, vector.y * scalar);
   }
 }
 
