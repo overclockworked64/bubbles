@@ -36,12 +36,32 @@ const MATRIX_ROTATE_CLOCKWISE: Matrix = [
 ];
 
 class Vec2D {
-  x: number;
-  y: number;
+  public x: number;
+  public y: number;
 
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
+  }
+
+  public toXY(): [number, number] {
+    return [this.x, this.y];
+  }
+
+  public add(vector: Vec2D): Vec2D {
+    return new Vec2D(this.x + vector.x, this.y + vector.y);
+  }
+
+  public sub(vector: Vec2D): Vec2D {
+    return new Vec2D(this.x - vector.x, this.y - vector.y);
+  }
+
+  public scalarMul(scalar: number): Vec2D {
+    return new Vec2D(this.x * scalar, this.y * scalar);
+  }
+
+  public scalarDiv(scalar: number): Vec2D {
+    return new Vec2D(this.x / scalar, this.y / scalar);
   }
 }
 
@@ -53,6 +73,8 @@ class BubbleShooter {
   private gun: Vec2D;
   private bullet: Vec2D;
   private bulletColor: Color;
+
+  private time: number;
 
   constructor() {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -67,10 +89,28 @@ class BubbleShooter {
     this.gun = this.createGun();
     this.bullet = this.createBullet();
     this.bulletColor = this.pickBulletColor();
+    this.time = 0;
 
     this.drawBubbles();
     this.drawGun();
     this.drawBullet();
+  }
+
+  public fireBullet() {
+    if (this.time > 20) {
+      return;
+    }
+
+    let directionVector = this.gun.scalarMul(5).sub(new Vec2D(0, 0));
+    directionVector = directionVector.scalarDiv(Math.hypot(directionVector.x, directionVector.y));
+
+    this.bullet = new Vec2D(0, 0).add(this.vectorScalarMul(directionVector, this.time));
+    
+    setTimeout(() => {
+      this.time += 1;
+      this.reDraw(); 
+      this.fireBullet();
+    }, 10);
   }
 
   public rotateGun(direction: Direction) {
@@ -117,7 +157,7 @@ class BubbleShooter {
   }
 
   private createBullet(): Vec2D {
-    return new Vec2D(PLAYGROUND_WIDTH / 2, PLAYGROUND_HEIGHT - 0.5);
+    return new Vec2D(0, 0);
   }
 
   private pickBulletColor() {
@@ -154,10 +194,15 @@ class BubbleShooter {
   }
 
   private drawBullet() {
-    const bulletCoords = this.game2Canvas(this.bullet);
+    const bulletCoords = this.math2Canvas(this.bullet);
 
     this.ctx.beginPath();
-    this.ctx.arc(bulletCoords.x, bulletCoords.y, SCALE * RADIUS, 0, 2 * Math.PI);
+    this.ctx.arc(
+      bulletCoords.x,
+      bulletCoords.y + (2 * SCALE * (PLAYGROUND_HEIGHT / 2 - 0.5)),
+      SCALE * RADIUS,
+      0, 2 * Math.PI
+    );
     this.ctx.fillStyle = this.bulletColor;
     this.ctx.fill();
     this.ctx.stroke();
@@ -229,6 +274,9 @@ const main = () => {
     case 'ArrowRight':
       game.rotateGun(Direction.Right);
       game.reDraw();
+      break;
+    case 'Space':
+      game.fireBullet();
       break;
     }
   });
