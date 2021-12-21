@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import { min } from 'lodash';
 
 const SCALE = 10;
 const RADIUS = 1;
