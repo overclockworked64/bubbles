@@ -158,24 +158,7 @@ class BubbleShooter {
     if (this.bubbles[wantedLandingPosition] === null) {
       this.bubbles[wantedLandingPosition] = this.bulletColor;
     } else {
-      const potentialLandingPositions: BubbleGrid = {};
-
-      // Find free spots to land and add them to `potentialLandingPositions`
-      for (const [bubbleKey, color] of Object.entries(this.bubbles)) {
-        const [coordX, coordY] = this.key2Coord(bubbleKey).toXY();
-        if (color === null) {
-          if (
-            (coordX === x - 0.5 && coordY === y - 1) ||
-            (coordX === x + 0.5 && coordY === y - 1) ||
-            (coordX === x - 1 && coordY === y) ||
-            (coordX === x + 1 && coordY === y) ||
-            (coordX === x - 0.5 && coordY === y + 1) ||
-            (coordX === x + 0.5 && coordY === y + 1)
-          ) {
-            potentialLandingPositions[bubbleKey] = color;
-          }  
-        }
-      }
+      const potentialLandingPositions = this.getSurroundingBubbles(new Vec2D(x, y), null);
 
       // Calculate distances from the bullet landing point
       const distances: {
@@ -208,6 +191,34 @@ class BubbleShooter {
     this.reDraw();
   }
 
+  private getSurroundingBubbles(coord: Vec2D, keepOnly: Color | null) {
+    // Find all bubbles surrounding the coord
+    const surroundingBubbles: BubbleGrid = {};
+
+    for (const [bubbleKey, color] of Object.entries(this.bubbles)) {
+      const [bubbleCoordX, bubbleCoordY] = this.key2Coord(bubbleKey).toXY();    
+      if (
+        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y - 1) ||
+        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y - 1) ||
+        (bubbleCoordX === coord.x - 1 && bubbleCoordY === coord.y) ||
+        (bubbleCoordX === coord.x + 1 && bubbleCoordY === coord.y) ||
+        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y + 1) ||
+        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y + 1)
+      ) {
+        surroundingBubbles[bubbleKey] = color;
+      }
+    }
+
+    // Keep only bubbles of the same color as the bullet
+    for (const [key, color] of Object.entries(surroundingBubbles)) {
+      if (color !== keepOnly) {
+        delete surroundingBubbles[key];
+      }
+    }
+
+    return surroundingBubbles;
+  }
+
   private explode(coord: Vec2D) {
     /*
       First we have to find the bubbles that surround the
@@ -217,30 +228,7 @@ class BubbleShooter {
       of the same color, then we explode them recursively. 
     */
 
-    const surroundingBubbles: BubbleGrid = {};
-    const [x, y] = coord.toXY();
-
-    // Find all bubbles surrounding the coord and add them to `surroundingBubbles`
-    for (const [bubbleKey, color] of Object.entries(this.bubbles)) {
-      const [bubbleCoordX, bubbleCoordY] = this.key2Coord(bubbleKey).toXY();    
-      if (
-        (bubbleCoordX === x - 0.5 && bubbleCoordY === y - 1) ||
-        (bubbleCoordX === x + 0.5 && bubbleCoordY === y - 1) ||
-        (bubbleCoordX === x - 1 && bubbleCoordY === y) ||
-        (bubbleCoordX === x + 1 && bubbleCoordY === y) ||
-        (bubbleCoordX === x - 0.5 && bubbleCoordY === y + 1) ||
-        (bubbleCoordX === x + 0.5 && bubbleCoordY === y + 1)
-      ) {
-        surroundingBubbles[bubbleKey] = color;
-      }
-    }
-
-    // Keep only bubbles of the same color as the bullet
-    for (const [key, color] of Object.entries(surroundingBubbles)) {
-      if (color !== this.bulletColor) {
-        delete surroundingBubbles[key];
-      }
-    }
+    const surroundingBubbles = this.getSurroundingBubbles(coord, this.bulletColor);
 
     // Since only bubbles of the same color remained in `surroundingBubbles`,
     // repeat for each surrounding bubble recursively.
