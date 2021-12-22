@@ -122,7 +122,13 @@ class BubbleShooter {
       where the bullet landed.
     */
 
-    let [bulletX, bulletY] = this.bullet.toXY().map(c => Math.round(c));
+    let [bulletX, bulletY] = this.bullet.toXY().map(c => {
+      if ((c / 10) > 40 && (c / 10) < 60) {
+        return (Math.trunc(c) + 0.5);
+      } else {
+        return Math.round(c);
+      }
+    });
 
     bulletX += bulletY % 2 !== 0 ? 0.5 : 0;
 
@@ -274,7 +280,7 @@ class BubbleShooter {
     for (const [index, color] of Object.entries(this.bubbles)) {
       if (color !== null) {
         const bubbleCoords = this.key2Coord(index);
-        if (bubbleCoords.sub(this.bullet).length() < 1) {
+        if (bubbleCoords.sub(this.bullet).length() < 1.2) {
           return true;
         }
       }
