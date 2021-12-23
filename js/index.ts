@@ -152,7 +152,7 @@ class BubbleShooter {
       this.explode(this.key2Coord(wantedLandingPosition));
     } else {
       // Find free spots (i.e., where color is null)
-      const potentialLandingPositions = this.getSurroundingBubbles(new Vec2D(bulletX, bulletY), null);
+      const potentialLandingPositions = this.getSurroundingBubbles(new Vec2D(bulletX, bulletY));
 
       // Calculate distances from the bullet landing point
       const distances: {
@@ -184,7 +184,7 @@ class BubbleShooter {
     this.newRound();
   }
 
-  private getSurroundingBubbles(coord: Vec2D, keepOnly: Color | null) {
+  private getSurroundingBubbles(coord: Vec2D, keepOnly?: Color) {
     /*
       We want to check:
 
@@ -231,8 +231,15 @@ class BubbleShooter {
 
     // Keep only bubbles of the same color as the bullet
     for (const [key, color] of Object.entries(surroundingBubbles)) {
-      if (color !== keepOnly) {
-        delete surroundingBubbles[key];
+      if (keepOnly === undefined) {
+        if (color !== null) {
+          // Keep only free spots
+          delete surroundingBubbles[key];
+        }
+      } else {
+        if (color !== keepOnly) {
+          delete surroundingBubbles[key];
+        }
       }
     }
 
@@ -270,10 +277,11 @@ class BubbleShooter {
 
     while (!this.bulletIsAboutToCollide()) {
       if (
-        (this.bullet.x < -(PLAYGROUND_WIDTH / 2) - 10 || this.bullet.x > (PLAYGROUND_WIDTH / 2)) ||
+        (this.bullet.x < -(PLAYGROUND_WIDTH / 2 + 1) || this.bullet.x > (PLAYGROUND_WIDTH / 2 + 1)) ||
         (this.bullet.y < 0 || this.bullet.y > PLAYGROUND_HEIGHT)
       ) {
-        break;
+        this.newRound();
+        return;
       }
 
       this.bullet = gunOrigin.add(directionVector.scalarMul(this.time));
