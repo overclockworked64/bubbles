@@ -124,61 +124,38 @@ class BubbleShooter {
       to find a spot with the minimum distance from the spot
       where the bullet landed.
     */
+    console.log('bullet is at: ', this.bullet);
 
-    let bulletX: number;
+    const distances: {
+      [key: string]: number
+    } = {};
 
-    /* 
-      Don't ax me why
-      Things are not the way they used to be
-      I won't tell no lie
-    */
-    if ((this.bullet.x % 1) < 0) {
-      bulletX = Math.floor(this.bullet.x);
-    } else {
-      bulletX = Math.round(this.bullet.x);
-    }
-
-    const bulletY = Math.round(this.bullet.y);
-
-    bulletX += bulletY % 2 !== 0 ? 0.5 : 0;
-
-    const wantedLandingPosition = this.coord2Index(new Vec2D(bulletX, bulletY));
-
-    if (this.bubbles[wantedLandingPosition] === null) {
-      this.bubbles[wantedLandingPosition] = this.bulletColor;
-      this.bullet = this.key2Coord(wantedLandingPosition);
-      this.explode(this.key2Coord(wantedLandingPosition));
-    } else {
-      // Find free spots (i.e., where color is null)
-      const potentialLandingPositions = this.getSurroundingBubbles(new Vec2D(bulletX, bulletY));
-
-      // Calculate distances from the bullet landing point
-      const distances: {
-        [key: string]: number
-      } = {};
-
-      for (const positionKey of Object.keys(potentialLandingPositions)) {
-        const [coordX, coordY] = this.key2Coord(positionKey).toXY();
-        const distanceVector = new Vec2D(bulletX - coordX, bulletY - coordY);
+    // Find free spots (i.e., where color is null)
+    for (const [position, color] of Object.entries(this.bubbles)) {
+      if (color === null) {
+        const coord = this.key2Coord(position);
+        const distanceVector = coord.sub(this.bullet);
         const distance = Math.abs(distanceVector.length());
         
-        distances[positionKey] = distance;
+        distances[position] = distance;  
       }
-
-      // Find the minimum distance
-      const minDistance = Math.min(...Object.values(distances));
-
-      // Find the position with minimum distance
-      const finalPosition = Object.keys(distances).find(key => distances[key] === minDistance);
-
-      if (finalPosition !== undefined) {
-        this.bullet = this.key2Coord(finalPosition);
-        this.bubbles[finalPosition] = this.bulletColor; 
-      } 
-
-      this.explode(this.key2Coord(finalPosition!));
     }
-   
+
+    console.log('distances is', distances);
+
+    // Find the minimum distance
+    const minDistance = Math.min(...Object.values(distances));
+
+    // Find the position with minimum distance
+    const finalPosition = Object.keys(distances).find(d => distances[d] === minDistance);
+
+    if (finalPosition !== undefined) {
+      this.bullet = this.key2Coord(finalPosition);
+      this.bubbles[finalPosition] = this.bulletColor; 
+    } 
+
+    this.explode(this.key2Coord(finalPosition!));
+  
     this.newRound();
   }
 
@@ -193,23 +170,7 @@ class BubbleShooter {
       RIGHT      (x + 1  , y    )
       DOWN-LEFT  (x - 0.5, y - 1)
       DOWN       (x      , y - 1)
-      DOWN-RIGHT (x + 0.5, y - 1)
-        _________________________________________________
-      |                                                 |
-      |                                                 |
-      |     X Y Y X Y                                   |
-      |      X X Y X Y                                  |
-      |     X Y Y X Y                                   |
-      |           x                                     |
-      |                                                 |
-      |                                                 |
-      |                                                 |
-      |                                                 |
-      |                                                 |
-      |                                                 |
-      |                                                 |
-      -------------------------------------------------      
-    
+      DOWN-RIGHT (x + 0.5, y - 1)    
     */
     const surroundingBubbles: BubbleGrid = {};
 
