@@ -125,22 +125,15 @@ class BubbleShooter {
       where the bullet landed.
     */
 
-    let [bulletX, bulletY] = this.bullet.toXY().map(c => {
-      if (c < 0) {
-        if ((c * 100) > -60 && (c * 100) < -40) {
-          return (Math.trunc(c) - 0.5);
-        } else {
-          return Math.round(c);
-        } 
+    let bulletX: number;
     
-      } else {
-        if ((c / 10) > 40 && (c / 10) < 60) {
-          return (Math.trunc(c) + 0.5);
-        } else {
-          return Math.round(c);
-        } 
-      }
-    });
+    if ((this.bullet.x % 1) < 0) {
+      bulletX = Math.floor(this.bullet.x);
+    } else {
+      bulletX = Math.round(this.bullet.x);
+    }
+
+    const bulletY = Math.round(this.bullet.y);
 
     bulletX += bulletY % 2 !== 0 ? 0.5 : 0;
 
@@ -295,11 +288,19 @@ class BubbleShooter {
     this.landBullet();
   }
 
+  private declareWin() {
+    document.getElementById('score')!.innerText = 'YOU WON!';
+  }
+
   private newRound() {
     this.bullet = this.createBullet();
     this.bulletColor = this.pickBulletColor();
     this.time = 0;
     this.reDraw();
+
+    if (Object.values(this.bubbles).every(x => x === null)) {
+      this.declareWin();
+    }
   }
  
   private bulletIsAboutToCollide(): boolean {
