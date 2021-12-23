@@ -123,19 +123,29 @@ class BubbleShooter {
     */
 
     let [bulletX, bulletY] = this.bullet.toXY().map(c => {
-      if ((c / 10) > 40 && (c / 10) < 60) {
-        return (Math.trunc(c) + 0.5);
+      if (c < 0) {
+        if ((c * 100) > -60 && (c * 100) < -40) {
+          return (Math.trunc(c) - 0.5);
+        } else {
+          return Math.round(c);
+        } 
+    
       } else {
-        return Math.round(c);
+        if ((c / 10) > 40 && (c / 10) < 60) {
+          return (Math.trunc(c) + 0.5);
+        } else {
+          return Math.round(c);
+        } 
       }
     });
 
     bulletX += bulletY % 2 !== 0 ? 0.5 : 0;
 
     const wantedLandingPosition = this.coord2Index(new Vec2D(bulletX, bulletY));
-    
+
     if (this.bubbles[wantedLandingPosition] === null) {
       this.bubbles[wantedLandingPosition] = this.bulletColor;
+      this.explode(this.key2Coord(wantedLandingPosition));
     } else {
       // Find free spots (i.e., where color is null)
       const potentialLandingPositions = this.getSurroundingBubbles(new Vec2D(bulletX, bulletY), null);
@@ -162,13 +172,14 @@ class BubbleShooter {
       if (finalPosition !== undefined) {
         this.bullet = this.key2Coord(finalPosition);
         this.bubbles[finalPosition] = this.bulletColor; 
+      } 
+
+      if (_.isEmpty(this.getSurroundingBubbles(this.key2Coord(finalPosition!), this.bulletColor))) {
+        this.explode(this.key2Coord(finalPosition!));
       }
     }
-    
-    this.explode(new Vec2D(bulletX, bulletY));
-
+   
     this.newRound();
-    this.reDraw();
   }
 
   private getSurroundingBubbles(coord: Vec2D, keepOnly: Color | null) {
@@ -274,13 +285,14 @@ class BubbleShooter {
     this.bullet = this.createBullet();
     this.bulletColor = this.pickBulletColor();
     this.time = 0;
+    this.reDraw();
   }
  
   private bulletIsAboutToCollide(): boolean {
     for (const [index, color] of Object.entries(this.bubbles)) {
       if (color !== null) {
         const bubbleCoords = this.key2Coord(index);
-        if (bubbleCoords.sub(this.bullet).length() < 1.2) {
+        if (bubbleCoords.sub(this.bullet).length() < 1.12) {
           return true;
         }
       }
@@ -325,7 +337,7 @@ class BubbleShooter {
   }
 
   private createBullet(): Vec2D {
-    return new Vec2D(0, 0);
+    return new Vec2D(0, 0.5);
   }
 
   private pickBulletColor() {
@@ -338,12 +350,21 @@ class BubbleShooter {
         const bubbleCoords = this.math2Canvas(this.key2Coord(coord));
             
         this.ctx.beginPath();
+
         this.ctx.arc(
           bubbleCoords.x + (2 * RADIUS * SCALE) / 2,
           bubbleCoords.y + (2 * RADIUS * SCALE) / 2,
           RADIUS * SCALE,
           0, 2 * Math.PI,
         );
+
+        // this.ctx.fillText(
+        //   this.key2Coord(coord).x.toString(),
+        //   bubbleCoords.x + (2 * RADIUS * SCALE) / 2,
+        //   bubbleCoords.y + (2 * RADIUS * SCALE) / 2,
+        //   SCALE,
+        // );
+
         this.ctx.fillStyle = color;
         this.ctx.fill();
         this.ctx.closePath(); 
@@ -369,7 +390,7 @@ class BubbleShooter {
     this.ctx.beginPath();
     this.ctx.arc(
       bulletCoords.x,
-      bulletCoords.y - RADIUS * SCALE,
+      bulletCoords.y,
       SCALE * RADIUS,
       0, 2 * Math.PI
     );
