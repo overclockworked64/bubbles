@@ -126,7 +126,12 @@ class BubbleShooter {
     */
 
     let bulletX: number;
-    
+
+    /* 
+      Don't ax me why
+      Things are not the way they used to be
+      I won't tell no lie
+    */
     if ((this.bullet.x % 1) < 0) {
       bulletX = Math.floor(this.bullet.x);
     } else {
