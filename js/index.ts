@@ -186,14 +186,14 @@ class BubbleShooter {
     /*
       We want to check:
 
-      UP-LEFT    (x - 0.5, y - 1)
-      UP         (x      , y - 1)
-      UP-RIGHT   (x + 0.5, y - 1)
+      UP-LEFT    (x - 0.5, y + 1)
+      UP         (x      , y + 1)
+      UP-RIGHT   (x + 0.5, y + 1)
       LEFT       (x - 1  , y    )
       RIGHT      (x + 1  , y    )
-      DOWN-LEFT  (x - 0.5, y + 1)
-      DOWN       (x      , y + 1)
-      DOWN-RIGHT (x + 0.5, y + 1)
+      DOWN-LEFT  (x - 0.5, y - 1)
+      DOWN       (x      , y - 1)
+      DOWN-RIGHT (x + 0.5, y - 1)
         _________________________________________________
       |                                                 |
       |                                                 |
@@ -216,12 +216,12 @@ class BubbleShooter {
     for (const [bubbleKey, color] of Object.entries(this.bubbles)) {
       const [bubbleCoordX, bubbleCoordY] = this.key2Coord(bubbleKey).toXY();    
       if (
-        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y - 1) ||
-        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y - 1) ||
+        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y + 1) ||
+        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y + 1) ||
         (bubbleCoordX === coord.x - 1 && bubbleCoordY === coord.y) ||
         (bubbleCoordX === coord.x + 1 && bubbleCoordY === coord.y) ||
-        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y + 1) ||
-        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y + 1)
+        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y - 1) ||
+        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y - 1)
       ) {
         surroundingBubbles[bubbleKey] = color;
       }
