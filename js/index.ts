@@ -28,13 +28,13 @@ type BubbleGrid = {
 type Matrix = number[][];
 
 const MATRIX_ROTATE_COUNTERCLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 90), Math.sin(Math.PI / 90)],
-  [-Math.sin(Math.PI / 90), Math.cos(Math.PI / 90)],
+  [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
+  [-Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
 
 const MATRIX_ROTATE_CLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 90), -Math.sin(Math.PI / 90)],
-  [Math.sin(Math.PI / 90), Math.cos(Math.PI / 90)],
+  [Math.cos(Math.PI / 360), -Math.sin(Math.PI / 360)],
+  [Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
 
 class Vec2D {
@@ -72,6 +72,8 @@ class Vec2D {
 }
 
 class BubbleShooter {
+  public gun: Vec2D;
+
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
@@ -79,7 +81,6 @@ class BubbleShooter {
   private ctxDebug: CanvasRenderingContext2D;
 
   private bubbles: BubbleGrid;
-  private gun: Vec2D;
   private bullet: Vec2D;
   private bulletColor: Color;
 
@@ -143,7 +144,8 @@ class BubbleShooter {
       where the bullet landed.
     */
     
-    console.log('bullet is at: ', this.bullet);
+    console.log('bullet is at:', this.bullet);
+    console.log('wantedLandingPosition is at:', this.wantedLandingPosition);
 
     const distances: {
       [key: string]: number
@@ -151,10 +153,12 @@ class BubbleShooter {
 
     const potentialLandingPositions = this.getSurroundingBubbles(this.wantedLandingPosition);
 
+    // let [bulletX, bulletY] = this.bullet.toXY().map(c => Math.round(c));
+
     // Find free spots (i.e., where color is null)
     for (const [position, color] of Object.entries(potentialLandingPositions)) {
       const coord = this.key2Coord(position);
-      const distanceVector = coord.sub(this.bullet);
+      const distanceVector = coord.sub(this.wantedLandingPosition);
       const distance = Math.abs(distanceVector.length());
       
       distances[position] = distance;  
@@ -258,6 +262,7 @@ class BubbleShooter {
         (this.bullet.y < 0 || this.bullet.y > PLAYGROUND_HEIGHT)
       ) {
         this.newRound();
+        
         return;
       }
 
@@ -266,7 +271,7 @@ class BubbleShooter {
       this.time += 0.75;
       this.reDraw();
 
-      await delay(10);
+      await delay(20);
     }
 
     this.landBullet();
@@ -291,7 +296,7 @@ class BubbleShooter {
     for (const [index, color] of Object.entries(this.bubbles)) {
       if (color !== null) {
         const bubbleCoords = this.key2Coord(index);
-        if (bubbleCoords.sub(this.bullet).length() < 1.5) {
+        if (bubbleCoords.sub(this.bullet).length() < 1.12) {
           this.wantedLandingPosition = bubbleCoords;
           return true;
         }
@@ -341,7 +346,7 @@ class BubbleShooter {
   }
 
   private createBullet(): Vec2D {
-    return new Vec2D(0, 0.5);
+    return new Vec2D(0, 0);
   }
 
   private pickBulletColor() {
@@ -382,7 +387,7 @@ class BubbleShooter {
 
   private drawGun() {
     const initialPosition = this.math2Canvas(new Vec2D(0, 0));
-    const gunPosition = this.math2Canvas(this.gun.scalarMul(GUN_LENGTH));
+    const gunPosition = this.math2Canvas(this.gun.scalarDiv(this.gun.length()).scalarMul(GUN_LENGTH));
         
     this.ctx.beginPath();
     this.ctx.moveTo(initialPosition.x, initialPosition.y - RADIUS * SCALE);
@@ -407,7 +412,7 @@ class BubbleShooter {
     this.ctx.fillStyle = this.bulletColor;
     this.ctx.arc(
       bulletCoords.x,
-      bulletCoords.y,
+      bulletCoords.y - (0.5 * 2 * RADIUS * SCALE),
       SCALE * RADIUS,
       0, 2 * Math.PI
     );
@@ -431,6 +436,14 @@ class BubbleShooter {
       (2 * SCALE) * (vector.x + (PLAYGROUND_WIDTH / 2)),
       (2 * SCALE) * (-vector.y + PLAYGROUND_HEIGHT),
     );
+  }
+
+  public canvas2Math(vector: Vec2D): Vec2D {
+    const convertedCoord = new Vec2D(
+      vector.x / (2 * SCALE) - PLAYGROUND_WIDTH / 2,
+      -vector.y / (2 * SCALE) + PLAYGROUND_HEIGHT,
+    );
+    return convertedCoord;
   }
 
   private coord2Index(coord: Vec2D): string {
@@ -471,21 +484,29 @@ class BubbleShooter {
 
 const main = () => {
   const game = new BubbleShooter();
-  document.addEventListener('keydown', (event) => {
-    switch (event.code) {
-    case 'ArrowLeft':
-      game.rotateGun(Direction.Left);
-      game.reDraw();
-      break;
-    case 'ArrowRight':
-      game.rotateGun(Direction.Right);
-      game.reDraw();
-      break;
-    case 'Space':
-      game.fireBullet();
-      break;
-    }
+  document.addEventListener('mousemove', event => {
+    game.gun = game.canvas2Math(new Vec2D(event.offsetX, event.offsetY));
+    game.reDraw();
   });
+  document.addEventListener('mousedown', event => {
+    game.fireBullet();
+  });
+
+  // document.addEventListener('keydown', event => {
+  //   switch (event.code) {
+  //   case 'ArrowLeft':
+  //     game.rotateGun(Direction.Left);
+  //     game.reDraw();
+  //     break;
+  //   case 'ArrowRight':
+  //     game.rotateGun(Direction.Right);
+  //     game.reDraw();
+  //     break;
+  //   case 'Space':
+  //     game.fireBullet();
+  //     break;
+  //   }
+  // });
 };
 
 document.addEventListener('DOMContentLoaded', main);
