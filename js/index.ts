@@ -1,3 +1,4 @@
+import "./seed.js";
 import * as _ from 'lodash';
 
 const SCALE = 10;
@@ -86,6 +87,8 @@ class BubbleShooter {
 
   private score: number;
 
+  private wantedLandingPosition: Vec2D;
+
   constructor() {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
     this.canvasDebug = document.getElementById('canvas-debug') as HTMLCanvasElement;
@@ -107,6 +110,11 @@ class BubbleShooter {
     this.bulletColor = this.pickBulletColor();
     this.time = 0;
     this.score = 0;
+    this.wantedLandingPosition = new Vec2D(0, 0);
+
+    for (let i = 0; i < 18 ; i++) {
+      this.rotateGun(Direction.Right);
+    }
 
     this.drawBubbles();
     this.drawGun();
@@ -134,30 +142,32 @@ class BubbleShooter {
       to find a spot with the minimum distance from the spot
       where the bullet landed.
     */
+    
     console.log('bullet is at: ', this.bullet);
 
     const distances: {
       [key: string]: number
     } = {};
 
-    const bulletX = Math.floor(this.bullet.x);
+    const potentialLandingPositions = this.getSurroundingBubbles(this.wantedLandingPosition);
 
     // Find free spots (i.e., where color is null)
-    for (const [position, color] of Object.entries(this.bubbles)) {
-      if (color === null) {
-        const coord = this.key2Coord(position);
-        const distanceVector = coord.sub(new Vec2D(bulletX + (Math.floor(this.bullet.y) % 2 !== 0 ? 0.5 : 0), this.bullet.y));
-        const distance = Math.abs(distanceVector.length());
-        
-        distances[position] = distance;  
-      }
+    for (const [position, color] of Object.entries(potentialLandingPositions)) {
+      const coord = this.key2Coord(position);
+      const distanceVector = coord.sub(this.bullet);
+      const distance = Math.abs(distanceVector.length());
+      
+      distances[position] = distance;  
     }
 
     // Find the minimum distance
     const minDistance = Math.min(...Object.values(distances));
     console.log('minDistance is', minDistance);
+    
     // Find the position with minimum distance
     const finalPosition = Object.keys(distances).find(d => distances[d] === minDistance);
+
+    console.log('finalPosition is:', finalPosition);
 
     this.bullet = this.key2Coord(finalPosition!);
     this.bubbles[finalPosition!] = this.bulletColor; 
@@ -281,7 +291,8 @@ class BubbleShooter {
     for (const [index, color] of Object.entries(this.bubbles)) {
       if (color !== null) {
         const bubbleCoords = this.key2Coord(index);
-        if (bubbleCoords.sub(this.bullet).length() < 1) {
+        if (bubbleCoords.sub(this.bullet).length() < 1.5) {
+          this.wantedLandingPosition = bubbleCoords;
           return true;
         }
       }
@@ -315,7 +326,7 @@ class BubbleShooter {
           )
         );
         
-        bubbleGrid[index] = row < PLAYGROUND_HEIGHT / 5 ? this.pickBulletColor() : null;
+        bubbleGrid[index] = row < 5 && col > 33 ? this.pickBulletColor() : null;
       }
     }
     return bubbleGrid;
