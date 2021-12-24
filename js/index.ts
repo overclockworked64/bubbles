@@ -124,8 +124,6 @@ class BubbleShooter {
       to find a spot with the minimum distance from the spot
       where the bullet landed.
     */
-    console.log('bullet is at: ', this.bullet);
-
     const distances: {
       [key: string]: number
     } = {};
@@ -140,8 +138,6 @@ class BubbleShooter {
         distances[position] = distance;  
       }
     }
-
-    console.log('distances is', distances);
 
     // Find the minimum distance
     const minDistance = Math.min(...Object.values(distances));
