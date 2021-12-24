@@ -1,3 +1,4 @@
+import "./seed.js";
 import * as _ from 'lodash';
 
 const SCALE = 10;
@@ -27,13 +28,13 @@ type BubbleGrid = {
 type Matrix = number[][];
 
 const MATRIX_ROTATE_COUNTERCLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 90), Math.sin(Math.PI / 90)],
-  [-Math.sin(Math.PI / 90), Math.cos(Math.PI / 90)],
+  [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
+  [-Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
 
 const MATRIX_ROTATE_CLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 90), -Math.sin(Math.PI / 90)],
-  [Math.sin(Math.PI / 90), Math.cos(Math.PI / 90)],
+  [Math.cos(Math.PI / 360), -Math.sin(Math.PI / 360)],
+  [Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
 
 class Vec2D {
@@ -71,17 +72,20 @@ class Vec2D {
 }
 
 class BubbleShooter {
+  public gun: Vec2D;
+
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
   private bubbles: BubbleGrid;
-  private gun: Vec2D;
   private bullet: Vec2D;
   private bulletColor: Color;
 
   private time: number;
 
   private score: number;
+
+  private wantedLandingPosition: Vec2D;
 
   constructor() {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -91,13 +95,14 @@ class BubbleShooter {
     this.outlineCanvas(this.canvas);
 
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-
+    
     this.bubbles = this.createBubbleGrid();
     this.gun = this.createGun();
     this.bullet = this.createBullet();
     this.bulletColor = this.pickBulletColor();
     this.time = 0;
     this.score = 0;
+    this.wantedLandingPosition = new Vec2D(0, 0);
 
     this.drawBubbles();
     this.drawGun();
@@ -124,31 +129,33 @@ class BubbleShooter {
       to find a spot with the minimum distance from the spot
       where the bullet landed.
     */
+    
     const distances: {
       [key: string]: number
     } = {};
 
+    const potentialLandingPositions = this.getSurroundingBubbles(this.wantedLandingPosition);
+
     // Find free spots (i.e., where color is null)
-    for (const [position, color] of Object.entries(this.bubbles)) {
-      if (color === null) {
-        const coord = this.key2Coord(position);
-        const distanceVector = coord.sub(this.bullet);
-        const distance = Math.abs(distanceVector.length());
-        
-        distances[position] = distance;  
-      }
+    for (const [position, color] of Object.entries(potentialLandingPositions)) {
+      const coord = this.key2Coord(position);
+      const distanceVector = coord.sub(this.wantedLandingPosition);
+      const distance = Math.abs(distanceVector.length());
+      
+      distances[position] = distance;  
     }
 
     // Find the minimum distance
     const minDistance = Math.min(...Object.values(distances));
-
+    console.log('minDistance is', minDistance);
+    
     // Find the position with minimum distance
     const finalPosition = Object.keys(distances).find(d => distances[d] === minDistance);
 
-    if (finalPosition !== undefined) {
-      this.bullet = this.key2Coord(finalPosition);
-      this.bubbles[finalPosition] = this.bulletColor; 
-    } 
+    console.log('finalPosition is:', finalPosition);
+
+    this.bullet = this.key2Coord(finalPosition!);
+    this.bubbles[finalPosition!] = this.bulletColor; 
 
     this.explode(this.key2Coord(finalPosition!));
   
@@ -235,7 +242,10 @@ class BubbleShooter {
         (this.bullet.x < -(PLAYGROUND_WIDTH / 2 + 1) || this.bullet.x > (PLAYGROUND_WIDTH / 2 + 1)) ||
         (this.bullet.y < 0 || this.bullet.y > PLAYGROUND_HEIGHT)
       ) {
+        this.score -= 10;
+        this.updateScore();
         this.newRound();
+        
         return;
       }
 
@@ -270,6 +280,7 @@ class BubbleShooter {
       if (color !== null) {
         const bubbleCoords = this.key2Coord(index);
         if (bubbleCoords.sub(this.bullet).length() < 1.12) {
+          this.wantedLandingPosition = bubbleCoords;
           return true;
         }
       }
@@ -303,7 +314,7 @@ class BubbleShooter {
           )
         );
         
-        bubbleGrid[index] = row < PLAYGROUND_HEIGHT / 5 ? this.pickBulletColor() : null;
+        bubbleGrid[index] = row < 5 ? this.pickBulletColor() : null;
       }
     }
     return bubbleGrid;
@@ -318,7 +329,7 @@ class BubbleShooter {
   }
 
   private createBullet(): Vec2D {
-    return new Vec2D(0, 0.5);
+    return new Vec2D(0, 0);
   }
 
   private pickBulletColor() {
@@ -340,13 +351,13 @@ class BubbleShooter {
         this.ctx.fillStyle = color;
         this.ctx.fill();
         this.ctx.closePath();
-      }
+     }
     }
   }
 
   private drawGun() {
     const initialPosition = this.math2Canvas(new Vec2D(0, 0));
-    const gunPosition = this.math2Canvas(this.gun.scalarMul(GUN_LENGTH));
+    const gunPosition = this.math2Canvas(this.gun.scalarDiv(this.gun.length()).scalarMul(GUN_LENGTH));
         
     this.ctx.beginPath();
     this.ctx.moveTo(initialPosition.x, initialPosition.y - RADIUS * SCALE);
@@ -361,13 +372,13 @@ class BubbleShooter {
  
     this.ctx.beginPath();
 
+    this.ctx.fillStyle = this.bulletColor;
     this.ctx.arc(
       bulletCoords.x,
-      bulletCoords.y,
+      bulletCoords.y - (0.5 * 2 * RADIUS * SCALE),
       SCALE * RADIUS,
       0, 2 * Math.PI
     );
-    this.ctx.fillStyle = this.bulletColor;
     this.ctx.fill();
     this.ctx.closePath();
   }
@@ -377,6 +388,14 @@ class BubbleShooter {
       (2 * SCALE) * (vector.x + (PLAYGROUND_WIDTH / 2)),
       (2 * SCALE) * (-vector.y + PLAYGROUND_HEIGHT),
     );
+  }
+
+  public canvas2Math(vector: Vec2D): Vec2D {
+    const convertedCoord = new Vec2D(
+      vector.x / (2 * SCALE) - PLAYGROUND_WIDTH / 2,
+      -vector.y / (2 * SCALE) + PLAYGROUND_HEIGHT,
+    );
+    return convertedCoord;
   }
 
   private coord2Index(coord: Vec2D): string {
@@ -417,20 +436,12 @@ class BubbleShooter {
 
 const main = () => {
   const game = new BubbleShooter();
-  document.addEventListener('keydown', (event) => {
-    switch (event.code) {
-    case 'ArrowLeft':
-      game.rotateGun(Direction.Left);
-      game.reDraw();
-      break;
-    case 'ArrowRight':
-      game.rotateGun(Direction.Right);
-      game.reDraw();
-      break;
-    case 'Space':
-      game.fireBullet();
-      break;
-    }
+  document.addEventListener('mousemove', event => {
+    game.gun = game.canvas2Math(new Vec2D(event.offsetX, event.offsetY));
+    game.reDraw();
+  });
+  document.addEventListener('mousedown', event => {
+    game.fireBullet();
   });
 };
 
