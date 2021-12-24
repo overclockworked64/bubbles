@@ -74,6 +74,9 @@ class BubbleShooter {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
+  private canvasDebug: HTMLCanvasElement;
+  private ctxDebug: CanvasRenderingContext2D;
+
   private bubbles: BubbleGrid;
   private gun: Vec2D;
   private bullet: Vec2D;
@@ -85,13 +88,19 @@ class BubbleShooter {
 
   constructor() {
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    this.canvasDebug = document.getElementById('canvas-debug') as HTMLCanvasElement;
 
     this.setCanvasSize(this.canvas);
     this.setCanvasColor(this.canvas);
     this.outlineCanvas(this.canvas);
 
-    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    this.setCanvasSize(this.canvasDebug);
+    this.setCanvasColor(this.canvasDebug);
+    this.outlineCanvas(this.canvasDebug);
 
+    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+    this.ctxDebug = this.canvasDebug.getContext('2d') as CanvasRenderingContext2D;
+    
     this.bubbles = this.createBubbleGrid();
     this.gun = this.createGun();
     this.bullet = this.createBullet();
@@ -110,6 +119,7 @@ class BubbleShooter {
 
   public reDraw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctxDebug.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawBubbles();
     this.drawGun();
     this.drawBullet();
@@ -130,29 +140,27 @@ class BubbleShooter {
       [key: string]: number
     } = {};
 
+    const bulletX = Math.floor(this.bullet.x);
+
     // Find free spots (i.e., where color is null)
     for (const [position, color] of Object.entries(this.bubbles)) {
       if (color === null) {
         const coord = this.key2Coord(position);
-        const distanceVector = coord.sub(this.bullet);
+        const distanceVector = coord.sub(new Vec2D(bulletX + (Math.floor(this.bullet.y) % 2 !== 0 ? 0.5 : 0), this.bullet.y));
         const distance = Math.abs(distanceVector.length());
         
         distances[position] = distance;  
       }
     }
 
-    console.log('distances is', distances);
-
     // Find the minimum distance
     const minDistance = Math.min(...Object.values(distances));
-
+    console.log('minDistance is', minDistance);
     // Find the position with minimum distance
     const finalPosition = Object.keys(distances).find(d => distances[d] === minDistance);
 
-    if (finalPosition !== undefined) {
-      this.bullet = this.key2Coord(finalPosition);
-      this.bubbles[finalPosition] = this.bulletColor; 
-    } 
+    this.bullet = this.key2Coord(finalPosition!);
+    this.bubbles[finalPosition!] = this.bulletColor; 
 
     this.explode(this.key2Coord(finalPosition!));
   
@@ -273,7 +281,7 @@ class BubbleShooter {
     for (const [index, color] of Object.entries(this.bubbles)) {
       if (color !== null) {
         const bubbleCoords = this.key2Coord(index);
-        if (bubbleCoords.sub(this.bullet).length() < 1.12) {
+        if (bubbleCoords.sub(this.bullet).length() < 1) {
           return true;
         }
       }
@@ -344,6 +352,19 @@ class BubbleShooter {
         this.ctx.fillStyle = color;
         this.ctx.fill();
         this.ctx.closePath();
+
+        this.ctx.closePath();
+
+        this.ctxDebug.beginPath();
+        this.ctxDebug.fillStyle = color;
+        this.ctxDebug.fillText(
+          this.key2Coord(coord).x.toString(),
+          bubbleCoords.x + (2 * RADIUS * SCALE) / 2,
+          bubbleCoords.y + (2 * RADIUS * SCALE) / 2,
+          SCALE,
+        );
+        this.ctxDebug.fill();
+        this.ctxDebug.closePath(); 
       }
     }
   }
@@ -358,6 +379,13 @@ class BubbleShooter {
     this.ctx.strokeStyle = Color.White;
     this.ctx.stroke();
     this.ctx.closePath();
+
+    this.ctxDebug.beginPath();
+    this.ctxDebug.moveTo(initialPosition.x, initialPosition.y - RADIUS * SCALE);
+    this.ctxDebug.lineTo(gunPosition.x, gunPosition.y);
+    this.ctxDebug.strokeStyle = Color.White;
+    this.ctxDebug.stroke();
+    this.ctxDebug.closePath();
   }
 
   private drawBullet() {
@@ -365,15 +393,26 @@ class BubbleShooter {
  
     this.ctx.beginPath();
 
+    this.ctx.fillStyle = this.bulletColor;
     this.ctx.arc(
       bulletCoords.x,
       bulletCoords.y,
       SCALE * RADIUS,
       0, 2 * Math.PI
     );
-    this.ctx.fillStyle = this.bulletColor;
     this.ctx.fill();
     this.ctx.closePath();
+
+    this.ctxDebug.beginPath();
+    this.ctxDebug.fillStyle = this.bulletColor;
+    this.ctxDebug.fillText(
+      this.bullet.x.toString(),
+      bulletCoords.x + (2 * RADIUS * SCALE) / 2,
+      bulletCoords.y + (2 * RADIUS * SCALE) / 2,
+      SCALE,
+    );
+    this.ctxDebug.fill();
+    this.ctxDebug.closePath();
   }
 
   private math2Canvas(vector: Vec2D): Vec2D {
