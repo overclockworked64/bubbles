@@ -68,35 +68,35 @@ class BubbleShooter {
   }
 
   public getSurroundingBubbles(coord: Vec2D, keepOnly?: Color) {
-    /*
-      We want to check:
-
-      UP-LEFT    (x - 0.5, y + 1)
-      UP         (x      , y + 1)
-      UP-RIGHT   (x + 0.5, y + 1)
-      LEFT       (x - 1  , y    )
-      RIGHT      (x + 1  , y    )
-      DOWN-LEFT  (x - 0.5, y - 1)
-      DOWN       (x      , y - 1)
-      DOWN-RIGHT (x + 0.5, y - 1)    
-    */
     const surroundingBubbles: BubbleGrid = {};
 
     for (const [bubbleKey, color] of Object.entries(this.bubbles)) {
-      const [bubbleCoordX, bubbleCoordY] = key2Coords(bubbleKey).toXY();    
+      const bubbleCoord = key2Coords(bubbleKey);    
+      /*
+        We want to check:
+
+        UP-LEFT    (x - 0.5, y + 1)
+        UP         (x      , y + 1)
+        UP-RIGHT   (x + 0.5, y + 1)
+        LEFT       (x - 1  , y    )
+        RIGHT      (x + 1  , y    )
+        DOWN-LEFT  (x - 0.5, y - 1)
+        DOWN       (x      , y - 1)
+        DOWN-RIGHT (x + 0.5, y - 1)    
+      */
       if (
-        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y + 1) ||
-        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y + 1) ||
-        (bubbleCoordX === coord.x - 1 && bubbleCoordY === coord.y) ||
-        (bubbleCoordX === coord.x + 1 && bubbleCoordY === coord.y) ||
-        (bubbleCoordX === coord.x - 0.5 && bubbleCoordY === coord.y - 1) ||
-        (bubbleCoordX === coord.x + 0.5 && bubbleCoordY === coord.y - 1)
+        (bubbleCoord.x === coord.x - 0.5 && bubbleCoord.y === coord.y + 1) ||
+        (bubbleCoord.x === coord.x + 0.5 && bubbleCoord.y === coord.y + 1) ||
+        (bubbleCoord.x === coord.x - 1   && bubbleCoord.y === coord.y    ) ||
+        (bubbleCoord.x === coord.x + 1   && bubbleCoord.y === coord.y    ) ||
+        (bubbleCoord.x === coord.x - 0.5 && bubbleCoord.y === coord.y - 1) ||
+        (bubbleCoord.x === coord.x + 0.5 && bubbleCoord.y === coord.y - 1)
       ) {
         surroundingBubbles[bubbleKey] = color;
       }
     }
 
-    // Keep only bubbles of the same color as the bullet
+    // Keep only specific bubbles
     for (const [key, color] of Object.entries(surroundingBubbles)) {
       if (keepOnly === undefined) {
         if (color !== null) {
@@ -105,6 +105,7 @@ class BubbleShooter {
         }
       } else {
         if (color !== keepOnly) {
+          // Keep only the bubbles of the same color as the bullet
           delete surroundingBubbles[key];
         }
       }

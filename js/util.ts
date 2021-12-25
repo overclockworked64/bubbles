@@ -1,18 +1,8 @@
 import * as _ from 'lodash';
-import { PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT, SCALE, Color, Direction } from "./index";
+import { PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT, SCALE, Color } from "./index";
 
 export class Vec2D {
-  public x: number;
-  public y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-
-  public toXY(): [number, number] {
-    return [this.x, this.y];
-  }
+  constructor(public x: number, public y: number) {}
 
   public add(vector: Vec2D): Vec2D {
     return new Vec2D(this.x + vector.x, this.y + vector.y);
@@ -38,6 +28,8 @@ export class Vec2D {
 export type BubbleGrid = {
   [key: string]: Color | null;
 };
+
+export type Matrix = number[][];
 
 export function createBubbleGrid(): BubbleGrid {
   const bubbleGrid: BubbleGrid = {};
@@ -85,8 +77,6 @@ export function coords2Key(coord: Vec2D): string {
 export function pickRandomColor() {
   return _.sample(Object.values(Color)) as Color;
 }
-
-export type Matrix = number[][];
 
 export const ROTATION_MATRIX_COUNTERCLOCKWISE: Matrix = [
   [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
