@@ -244,7 +244,7 @@ class Bullet {
     const potentialLandingPositions = this.game.getSurroundingBubbles(this.wantedLandingPosition);
 
     // Find free spots (i.e., where color is null)
-    for (const [position, color] of Object.entries(potentialLandingPositions)) {
+    for (const position of Object.keys(potentialLandingPositions)) {
       const coord = key2Coords(position);
       const distanceVector = coord.sub(this.wantedLandingPosition);
       const distance = Math.abs(distanceVector.length());
@@ -330,7 +330,7 @@ const main = () => {
     game.gun.coords = canvas2Math(new Vec2D(event.offsetX, event.offsetY));
     game.reDraw();
   });
-  document.addEventListener('mousedown', event => {
+  document.addEventListener('mousedown', () => {
     game.bullet.shoot();
   });
 };
