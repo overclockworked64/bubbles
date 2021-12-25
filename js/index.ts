@@ -105,7 +105,7 @@ class BubbleShooter {
         }
       } else {
         if (color !== keepOnly) {
-          // Keep only the bubbles of the same color as the bullet
+          // Keep only bubbles of the same color as the bullet
           delete surroundingBubbles[key];
         }
       }
@@ -234,7 +234,7 @@ class Bullet {
     this.wantedLandingPosition = new Vec2D(0, 0);
   }
 
-  private land() {
+  private async land() {
     /*
       We want to find a landing position for the bubble.
       
@@ -253,7 +253,7 @@ class Bullet {
     // Find free spots (i.e., where color is null)
     for (const position of Object.keys(potentialLandingPositions)) {
       const coord = key2Coords(position);
-      const distanceVector = coord.sub(this.wantedLandingPosition);
+      const distanceVector = coord.sub(this.coords);
       const distance = Math.abs(distanceVector.length());
       
       distances[position] = distance;  
@@ -268,6 +268,7 @@ class Bullet {
     this.coords = key2Coords(finalPosition!);
     this.game.bubbles[finalPosition!] = this.color; 
 
+    this.game.reDraw();
     this.game.explode(key2Coords(finalPosition!));
   
     this.game.newRound();
@@ -281,6 +282,7 @@ class Bullet {
     directionVector = directionVector.scalarDiv(directionVector.length());
 
     while (!this.aboutToCollide()) {
+      // If the bubble is beyond screen
       if (
         (this.coords.x < -(PLAYGROUND_WIDTH / 2 + 1) || this.coords.x > (PLAYGROUND_WIDTH / 2 + 1)) ||
         (this.coords.y < 0 || this.coords.y > PLAYGROUND_HEIGHT)
@@ -307,9 +309,9 @@ class Bullet {
     for (const [index, color] of Object.entries(this.game.bubbles)) {
       if (color !== null) {
         const bubbleCoords = key2Coords(index);
-        if (bubbleCoords.sub(this.coords).length() < 1.12) {
+        if (bubbleCoords.sub(this.coords).length() <= 2 * RADIUS * 0.75) {
           this.wantedLandingPosition = bubbleCoords;
-          
+          console.log('wantedLandingPosition is:', this.wantedLandingPosition);
           return true;
         }
       }
