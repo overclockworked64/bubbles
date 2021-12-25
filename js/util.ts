@@ -82,44 +82,18 @@ export function coords2Key(coord: Vec2D): string {
   return `${coord.x} ${coord.y}`;
 }
 
-export function rotate(point: Vec2D, direction: Direction): Vec2D {
-  let matrix: Matrix;
-
-  switch (direction) {
-  case Direction.Left:
-    matrix = ROTATION_MATRIX_COUNTERCLOCKWISE;
-    break;
-  case Direction.Right:
-    matrix = ROTATION_MATRIX_CLOCKWISE;
-    break;
-  }
-
-  return matrixVectorMul(matrix, point);
-}
-
 export function pickRandomColor() {
   return _.sample(Object.values(Color)) as Color;
 }
 
-type Matrix = number[][];
+export type Matrix = number[][];
 
-const ROTATION_MATRIX_COUNTERCLOCKWISE: Matrix = [
+export const ROTATION_MATRIX_COUNTERCLOCKWISE: Matrix = [
   [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
   [-Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
 
-const ROTATION_MATRIX_CLOCKWISE: Matrix = [
+export const ROTATION_MATRIX_CLOCKWISE: Matrix = [
   [Math.cos(Math.PI / 360), -Math.sin(Math.PI / 360)],
   [Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
-
-function matrixVectorMul(matrix: Matrix, vector: Vec2D): Vec2D {
-  const [col1, col2] = matrix;
-  const rotatedCol1 = col1.map(coord => coord * vector.x);
-  const rotatedCol2 = col2.map(coord => coord * vector.y);
-
-  return new Vec2D(
-    rotatedCol1[0] + rotatedCol2[0],
-    rotatedCol1[1] + rotatedCol2[1]
-  );
-}

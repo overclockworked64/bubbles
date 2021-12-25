@@ -1,12 +1,14 @@
 import { 
-  Vec2D,
   BubbleGrid,
   createBubbleGrid,
   key2Coords, 
   canvas2Math,
   math2Canvas,
   pickRandomColor,
-  rotate, 
+  Vec2D,
+  Matrix,
+  ROTATION_MATRIX_CLOCKWISE,
+  ROTATION_MATRIX_COUNTERCLOCKWISE,
 } from "./util";
 
 export const SCALE = 10;
@@ -308,7 +310,6 @@ class Bullet {
     }
     return false;
   }
-
 }
 
 class Gun {
@@ -319,9 +320,34 @@ class Gun {
   }
 
   public rotate(direction: Direction) {
-    this.coords = rotate(this.coords, direction);
+    this.coords = this.rotatePoint(this.coords, direction);
   }
 
+  private rotatePoint(point: Vec2D, direction: Direction): Vec2D {
+    let matrix: Matrix;
+  
+    switch (direction) {
+    case Direction.Left:
+      matrix = ROTATION_MATRIX_COUNTERCLOCKWISE;
+      break;
+    case Direction.Right:
+      matrix = ROTATION_MATRIX_CLOCKWISE;
+      break;
+    }
+  
+    return this.matrixVectorMul(matrix, point);
+  }
+
+  private matrixVectorMul(matrix: Matrix, vector: Vec2D): Vec2D {
+    const [col1, col2] = matrix;
+    const rotatedCol1 = col1.map(coord => coord * vector.x);
+    const rotatedCol2 = col2.map(coord => coord * vector.y);
+  
+    return new Vec2D(
+      rotatedCol1[0] + rotatedCol2[0],
+      rotatedCol1[1] + rotatedCol2[1]
+    );
+  }
 }
 
 const main = () => {
