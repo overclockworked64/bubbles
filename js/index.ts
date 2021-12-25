@@ -32,7 +32,6 @@ export enum Direction {
 class BubbleShooter {
   public bubbles: BubbleGrid;
   public gun: Gun;
-  public wantedLandingPosition: Vec2D;
   public score: number;
   public time: number;
   public bullet: Bullet;
@@ -53,7 +52,6 @@ class BubbleShooter {
     this.bullet = new Bullet(this);
     this.time = 0;
     this.score = 0;
-    this.wantedLandingPosition = new Vec2D(0, 0);
 
     this.drawBubbles();
     this.drawGun();
@@ -215,14 +213,18 @@ class BubbleShooter {
 }
 
 class Bullet {
-  private game: BubbleShooter;
   public coords: Vec2D;
   public color: Color;
+  public wantedLandingPosition: Vec2D;
+
+  private game: BubbleShooter;
+
 
   constructor(game: BubbleShooter) {
     this.game = game;
     this.coords = new Vec2D(0, 0);
     this.color = pickRandomColor();
+    this.wantedLandingPosition = new Vec2D(0, 0);
   }
 
   private land() {
@@ -239,12 +241,12 @@ class Bullet {
       [key: string]: number
     } = {};
 
-    const potentialLandingPositions = this.game.getSurroundingBubbles(this.game.wantedLandingPosition);
+    const potentialLandingPositions = this.game.getSurroundingBubbles(this.wantedLandingPosition);
 
     // Find free spots (i.e., where color is null)
     for (const [position, color] of Object.entries(potentialLandingPositions)) {
       const coord = key2Coords(position);
-      const distanceVector = coord.sub(this.game.wantedLandingPosition);
+      const distanceVector = coord.sub(this.wantedLandingPosition);
       const distance = Math.abs(distanceVector.length());
       
       distances[position] = distance;  
@@ -299,7 +301,7 @@ class Bullet {
       if (color !== null) {
         const bubbleCoords = key2Coords(index);
         if (bubbleCoords.sub(this.coords).length() < 1.12) {
-          this.game.wantedLandingPosition = bubbleCoords;
+          this.wantedLandingPosition = bubbleCoords;
           return true;
         }
       }
