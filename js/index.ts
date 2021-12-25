@@ -187,7 +187,11 @@ class BubbleShooter {
 
   private drawGun() {
     const initialPosition = math2Canvas(new Vec2D(0, 0));
-    const gunPosition = math2Canvas(this.gun.coords.scalarDiv(this.gun.coords.length()).scalarMul(GUN_LENGTH));
+    const gunPosition = math2Canvas(
+      this.gun.coords.scalarDiv(
+        this.gun.coords.length()
+      ).scalarMul(GUN_LENGTH)
+    );
         
     this.ctx.beginPath();
     this.ctx.moveTo(initialPosition.x, initialPosition.y - RADIUS * SCALE);
@@ -304,6 +308,7 @@ class Bullet {
         const bubbleCoords = key2Coords(index);
         if (bubbleCoords.sub(this.coords).length() < 1.12) {
           this.wantedLandingPosition = bubbleCoords;
+          
           return true;
         }
       }
