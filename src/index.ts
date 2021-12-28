@@ -249,20 +249,12 @@ class Bullet {
 
     const potentialLandingPositions = this.game.getSurroundingBubbles(this.wantedLandingPosition);
 
-    // Find free spots (i.e., where color is null)
-    for (const position of Object.keys(potentialLandingPositions)) {
+    // Find the position with minimum distance
+    const finalPosition = _.minBy(Object.keys(potentialLandingPositions), (position) => {
       const coord = key2Coords(position);
       const distanceVector = coord.sub(this.coords);
-      const distance = Math.abs(distanceVector.length());
-      
-      distances[position] = distance;  
-    }
-
-    // Find the minimum distance
-    const minDistance = Math.min(...Object.values(distances));
-    
-    // Find the position with minimum distance
-    const finalPosition = Object.keys(distances).find(d => distances[d] === minDistance);
+      return Math.abs(distanceVector.length());
+    });
 
     this.coords = key2Coords(finalPosition!);
     this.game.bubbles[finalPosition!] = this.color; 
