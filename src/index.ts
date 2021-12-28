@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import { 
   BubbleGrid,
   createBubbleGrid,
@@ -84,15 +85,13 @@ class BubbleShooter {
         DOWN       (x      , y - 1)
         DOWN-RIGHT (x + 0.5, y - 1)    
       */
-      if (
-        (bubbleCoord.x === coord.x - 0.5 && bubbleCoord.y === coord.y + 1) ||
-        (bubbleCoord.x === coord.x + 0.5 && bubbleCoord.y === coord.y + 1) ||
-        (bubbleCoord.x === coord.x - 1   && bubbleCoord.y === coord.y    ) ||
-        (bubbleCoord.x === coord.x + 1   && bubbleCoord.y === coord.y    ) ||
-        (bubbleCoord.x === coord.x - 0.5 && bubbleCoord.y === coord.y - 1) ||
-        (bubbleCoord.x === coord.x + 0.5 && bubbleCoord.y === coord.y - 1)
-      ) {
-        surroundingBubbles[bubbleKey] = color;
+      for (const offset of _.zip([0.5, 1, 0.5], [1, 0, -1])) {
+        if (
+          (bubbleCoord.x + offset[0]! == coord.x || bubbleCoord.x - offset[0]! == coord.x) &&
+          (bubbleCoord.y + offset[1]! == coord.y)       
+        ) {
+          surroundingBubbles[bubbleKey] = color;
+        }
       }
     }
 
@@ -309,9 +308,8 @@ class Bullet {
     for (const [index, color] of Object.entries(this.game.bubbles)) {
       if (color !== null) {
         const bubbleCoords = key2Coords(index);
-        if (bubbleCoords.sub(this.coords).length() <= 2 * RADIUS * 0.75) {
+        if (bubbleCoords.sub(this.coords).length() <= 2 * RADIUS * 0.85) {
           this.wantedLandingPosition = bubbleCoords;
-          console.log('wantedLandingPosition is:', this.wantedLandingPosition);
           return true;
         }
       }
@@ -347,13 +345,11 @@ class Gun {
   }
 
   private matrixVectorMul(matrix: Matrix, vector: Vec2D): Vec2D {
-    const [col1, col2] = matrix;
-    const rotatedCol1 = col1.map(coord => coord * vector.x);
-    const rotatedCol2 = col2.map(coord => coord * vector.y);
-  
+    const [row1, row2] = matrix;
+
     return new Vec2D(
-      rotatedCol1[0] + rotatedCol2[0],
-      rotatedCol1[1] + rotatedCol2[1]
+      vector.x * row1[0] + vector.y * row1[1],
+      vector.y * row2[0] + vector.y * row1[1],
     );
   }
 }

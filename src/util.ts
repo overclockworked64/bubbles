@@ -79,11 +79,11 @@ export function pickRandomColor() {
 }
 
 export const ROTATION_MATRIX_COUNTERCLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
-  [-Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
+  [Math.cos(Math.PI / 360), -Math.sin(Math.PI / 360)],
+  [Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
 
 export const ROTATION_MATRIX_CLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 360), -Math.sin(Math.PI / 360)],
-  [Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
+  [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
+  [-Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
 ];
