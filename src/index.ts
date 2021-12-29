@@ -61,11 +61,68 @@ class BubbleShooter {
     this.drawBullet();
   }
 
-  public reDraw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.drawBubbles();
-    this.drawGun();
-    this.drawBullet();
+  private setCanvasSize(canvas: HTMLCanvasElement) {
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
+  }
+
+  private setCanvasColor(canvas: HTMLCanvasElement) {
+    canvas.style.background = '#0f0f23';
+  }
+
+  private outlineCanvas(canvas: HTMLCanvasElement) {
+    canvas.style.border = '3px solid black';
+  }
+
+  private drawBubbles() {
+    for (const [coord, color] of Object.entries(this.bubbles)) {
+      if (color !== null) {
+        const bubbleCoords = math2Canvas(key2Coords(coord));
+            
+        this.ctx.beginPath();
+        this.ctx.arc(
+          bubbleCoords.x + (2 * RADIUS * SCALE) / 2,
+          bubbleCoords.y + (2 * RADIUS * SCALE) / 2,
+          RADIUS * SCALE,
+          0, 2 * Math.PI,
+        );
+        this.ctx.fillStyle = color;
+        this.ctx.fill();
+        this.ctx.closePath();
+     }
+    }
+  }
+
+  private drawGun() {
+    const initialPosition = math2Canvas(new Vec2D(0, 0));
+    const gunPosition = math2Canvas(
+      this.gun.coords.scalarDiv(
+        this.gun.coords.length()
+      ).scalarMul(GUN_LENGTH)
+    );
+        
+    this.ctx.beginPath();
+    this.ctx.moveTo(initialPosition.x, initialPosition.y - RADIUS * SCALE);
+    this.ctx.lineTo(gunPosition.x, gunPosition.y);
+    this.ctx.strokeStyle = Color.White;
+    this.ctx.stroke();
+    this.ctx.closePath();
+  }
+
+  private drawBullet() {
+    const bulletCoords = math2Canvas(this.bullet.coords);
+ 
+    this.ctx.beginPath();
+
+    this.ctx.fillStyle = this.bullet.color;
+    this.ctx.arc(
+      bulletCoords.x,
+      bulletCoords.y - (0.5 * 2 * RADIUS * SCALE),
+      SCALE * RADIUS,
+      0, 2 * Math.PI
+    );
+    this.ctx.fill();
+    this.ctx.closePath();
   }
 
   public getSurroundingBubbles(coord: Vec2D, keepOnly?: Color) {
@@ -135,6 +192,10 @@ class BubbleShooter {
     }
   }
 
+  public updateScore() {
+    document.getElementById('score')!.innerText = `SCORE: ${this.score}`;
+  }
+
   public newRound() {
     this.bullet = new Bullet(this);
     this.time = 0;
@@ -145,76 +206,15 @@ class BubbleShooter {
     }
   }
  
-  public updateScore() {
-    document.getElementById('score')!.innerText = `SCORE: ${this.score}`;
+  public reDraw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawBubbles();
+    this.drawGun();
+    this.drawBullet();
   }
 
   private declareWin() {
     document.getElementById('score')!.innerText = 'YOU WON!';
-  }
-
-  private setCanvasSize(canvas: HTMLCanvasElement) {
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
-  }
-
-  private setCanvasColor(canvas: HTMLCanvasElement) {
-    canvas.style.background = '#0f0f23';
-  }
-
-  private outlineCanvas(canvas: HTMLCanvasElement) {
-    canvas.style.border = '3px solid black';
-  }
-
-  private drawBubbles() {
-    for (const [coord, color] of Object.entries(this.bubbles)) {
-      if (color !== null) {
-        const bubbleCoords = math2Canvas(key2Coords(coord));
-            
-        this.ctx.beginPath();
-        this.ctx.arc(
-          bubbleCoords.x + (2 * RADIUS * SCALE) / 2,
-          bubbleCoords.y + (2 * RADIUS * SCALE) / 2,
-          RADIUS * SCALE,
-          0, 2 * Math.PI,
-        );
-        this.ctx.fillStyle = color;
-        this.ctx.fill();
-        this.ctx.closePath();
-     }
-    }
-  }
-
-  private drawGun() {
-    const initialPosition = math2Canvas(new Vec2D(0, 0));
-    const gunPosition = math2Canvas(
-      this.gun.coords.scalarDiv(
-        this.gun.coords.length()
-      ).scalarMul(GUN_LENGTH)
-    );
-        
-    this.ctx.beginPath();
-    this.ctx.moveTo(initialPosition.x, initialPosition.y - RADIUS * SCALE);
-    this.ctx.lineTo(gunPosition.x, gunPosition.y);
-    this.ctx.strokeStyle = Color.White;
-    this.ctx.stroke();
-    this.ctx.closePath();
-  }
-
-  private drawBullet() {
-    const bulletCoords = math2Canvas(this.bullet.coords);
- 
-    this.ctx.beginPath();
-
-    this.ctx.fillStyle = this.bullet.color;
-    this.ctx.arc(
-      bulletCoords.x,
-      bulletCoords.y - (0.5 * 2 * RADIUS * SCALE),
-      SCALE * RADIUS,
-      0, 2 * Math.PI
-    );
-    this.ctx.fill();
-    this.ctx.closePath();
   }
 }
 
