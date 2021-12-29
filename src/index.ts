@@ -243,10 +243,7 @@ class Bullet {
       where the bullet landed.
     */
     
-    const distances: {
-      [key: string]: number
-    } = {};
-
+    const distances: Record<string, number> = {};
     const potentialLandingPositions = this.game.getSurroundingBubbles(this.wantedLandingPosition);
 
     // Find the position with minimum distance

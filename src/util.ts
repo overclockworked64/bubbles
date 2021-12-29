@@ -25,9 +25,7 @@ export class Vec2D {
   }
 }
 
-export type BubbleGrid = {
-  [key: string]: Color | null;
-};
+export type BubbleGrid = Record<string, Color | null>;
 
 export type Matrix = number[][];
 
