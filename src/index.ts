@@ -140,12 +140,12 @@ class BubbleShooter {
         RIGHT      (x + 1  , y    )
         DOWN-LEFT  (x - 0.5, y - 1)
         DOWN       (x      , y - 1)
-        DOWN-RIGHT (x + 0.5, y - 1)    
+        DOWN-RIGHT (x + 0.5, y - 1)
       */
-      for (const offset of _.zip([0.5, 1, 0.5], [1, 0, -1])) {
+      for (const offset of _.zip([0, 0.5, 1], [1, 1, 0])) {
         if (
           (bubbleCoord.x + offset[0]! == coord.x || bubbleCoord.x - offset[0]! == coord.x) &&
-          (bubbleCoord.y + offset[1]! == coord.y)       
+          (bubbleCoord.y + offset[1]! == coord.y || bubbleCoord.x - offset[1]! == coord.y)       
         ) {
           surroundingBubbles[bubbleKey] = color;
         }
