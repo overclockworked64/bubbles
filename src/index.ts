@@ -8,9 +8,6 @@ import {
   math2Canvas,
   pickRandomColor,
   Vec2D,
-  Matrix,
-  ROTATION_MATRIX_CLOCKWISE,
-  ROTATION_MATRIX_COUNTERCLOCKWISE,
 } from "./util";
 
 export const SCALE = 10;
@@ -318,10 +315,7 @@ class Gun {
   }
 
   public rotate(coords: Vec2D) {
-    const gunMathCoords = canvas2Math(coords);
-    const angle = Math.atan2(gunMathCoords.y, gunMathCoords.x);
-    
-    this.coords = new Vec2D(Math.cos(angle), Math.sin(angle));
+    this.coords = canvas2Math(coords);
   }
 }
 

@@ -27,8 +27,6 @@ export class Vec2D {
 
 export type BubbleGrid = Record<string, Color | null>;
 
-export type Matrix = number[][];
-
 export function createBubbleGrid(): BubbleGrid {
   const bubbleGrid: BubbleGrid = {};
 
