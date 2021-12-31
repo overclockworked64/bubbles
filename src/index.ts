@@ -315,7 +315,10 @@ class Gun {
   }
 
   public rotate(coords: Vec2D) {
-    this.coords = canvas2Math(coords);
+    const gunMathCoords = canvas2Math(coords);
+    const angle = Math.atan2(gunMathCoords.y, gunMathCoords.x);
+    
+    this.coords = new Vec2D(Math.cos(angle), Math.sin(angle));
   }
 }
 
