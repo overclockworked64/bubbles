@@ -1,3 +1,4 @@
+import "./seed.js";
 import * as _ from "lodash";
 import { 
   BubbleGrid,
@@ -142,13 +143,15 @@ class BubbleShooter {
         DOWN       (x      , y - 1)
         DOWN-RIGHT (x + 0.5, y - 1)
       */
-      for (const offset of _.zip([0, 0.5, 1], [1, 1, 0])) {
-        if (
-          (bubbleCoord.x + offset[0]! == coord.x || bubbleCoord.x - offset[0]! == coord.x) &&
-          (bubbleCoord.y + offset[1]! == coord.y || bubbleCoord.x - offset[1]! == coord.y)       
-        ) {
-          surroundingBubbles[bubbleKey] = color;
-        }
+      if (
+        (bubbleCoord.x === coord.x - 0.5 && bubbleCoord.y === coord.y + 1) ||
+        (bubbleCoord.x === coord.x + 0.5 && bubbleCoord.y === coord.y + 1) ||
+        (bubbleCoord.x === coord.x - 1   && bubbleCoord.y === coord.y    ) ||
+        (bubbleCoord.x === coord.x + 1   && bubbleCoord.y === coord.y    ) ||
+        (bubbleCoord.x === coord.x - 0.5 && bubbleCoord.y === coord.y - 1) ||
+        (bubbleCoord.x === coord.x + 0.5 && bubbleCoord.y === coord.y - 1)
+      ) {
+        surroundingBubbles[bubbleKey] = color;
       }
     }
 
@@ -314,39 +317,18 @@ class Gun {
     this.coords =  new Vec2D(0, 1);  
   }
 
-  public rotate(direction: Direction) {
-    this.coords = this.rotatePoint(this.coords, direction);
-  }
-
-  private rotatePoint(point: Vec2D, direction: Direction): Vec2D {
-    let matrix: Matrix;
-  
-    switch (direction) {
-    case Direction.Left:
-      matrix = ROTATION_MATRIX_COUNTERCLOCKWISE;
-      break;
-    case Direction.Right:
-      matrix = ROTATION_MATRIX_CLOCKWISE;
-      break;
-    }
-  
-    return this.matrixVectorMul(matrix, point);
-  }
-
-  private matrixVectorMul(matrix: Matrix, vector: Vec2D): Vec2D {
-    const [row1, row2] = matrix;
-
-    return new Vec2D(
-      vector.x * row1[0] + vector.y * row1[1],
-      vector.y * row2[0] + vector.y * row1[1],
-    );
+  public rotate(coords: Vec2D) {
+    const gunMathCoords = canvas2Math(coords);
+    const angle = Math.atan2(gunMathCoords.y, gunMathCoords.x);
+    
+    this.coords = new Vec2D(Math.cos(angle), Math.sin(angle));
   }
 }
 
 const main = () => {
   const game = new BubbleShooter();
   document.addEventListener('mousemove', event => {
-    game.gun.coords = canvas2Math(new Vec2D(event.offsetX, event.offsetY));
+    game.gun.rotate(new Vec2D(event.offsetX, event.offsetY));
     game.reDraw();
   });
   document.addEventListener('mousedown', () => {

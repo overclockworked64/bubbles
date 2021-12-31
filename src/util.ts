@@ -75,13 +75,3 @@ export function coords2Key(coord: Vec2D): string {
 export function pickRandomColor() {
   return _.sample(Object.values(Color)) as Color;
 }
-
-export const ROTATION_MATRIX_COUNTERCLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 360), -Math.sin(Math.PI / 360)],
-  [Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
-];
-
-export const ROTATION_MATRIX_CLOCKWISE: Matrix = [
-  [Math.cos(Math.PI / 360), Math.sin(Math.PI / 360)],
-  [-Math.sin(Math.PI / 360), Math.cos(Math.PI / 360)],
-];
