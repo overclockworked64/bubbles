@@ -115,7 +115,7 @@ class BubbleShooter {
     this.ctx.fillStyle = this.bullet.color;
     this.ctx.arc(
       bulletCoords.x,
-      bulletCoords.y - (0.5 * 2 * RADIUS * SCALE),
+      bulletCoords.y,
       SCALE * RADIUS,
       0, 2 * Math.PI
     );
@@ -228,7 +228,7 @@ class Bullet {
 
   constructor(game: BubbleShooter) {
     this.game = game;
-    this.coords = new Vec2D(0, 0);
+    this.coords = new Vec2D(0, 0.5);
     this.color = pickRandomColor();
     this.wantedLandingPosition = new Vec2D(0, 0);
   }
