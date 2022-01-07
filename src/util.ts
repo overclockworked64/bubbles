@@ -1,23 +1,23 @@
 import * as _ from 'lodash';
 import { PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT, SCALE, Color } from "./index";
 
-export class Vec2D {
+export class Vec2 {
   constructor(public x: number, public y: number) {}
 
-  public add(vector: Vec2D): Vec2D {
-    return new Vec2D(this.x + vector.x, this.y + vector.y);
+  public add(vector: Vec2): Vec2 {
+    return new Vec2(this.x + vector.x, this.y + vector.y);
   }
 
-  public sub(vector: Vec2D): Vec2D {
-    return new Vec2D(this.x - vector.x, this.y - vector.y);
+  public sub(vector: Vec2): Vec2 {
+    return new Vec2(this.x - vector.x, this.y - vector.y);
   }
 
-  public scalarMul(scalar: number): Vec2D {
-    return new Vec2D(this.x * scalar, this.y * scalar);
+  public scalarMul(scalar: number): Vec2 {
+    return new Vec2(this.x * scalar, this.y * scalar);
   }
 
-  public scalarDiv(scalar: number): Vec2D {
-    return new Vec2D(this.x / scalar, this.y / scalar);
+  public scalarDiv(scalar: number): Vec2 {
+    return new Vec2(this.x / scalar, this.y / scalar);
   }
 
   public length(): number {
@@ -34,7 +34,7 @@ export function createBubbleGrid(): BubbleGrid {
     for (let col = 0; col < PLAYGROUND_WIDTH; col++) {
       const offset = row % 2 !== 0 ? 0.5 : 0;
       const index = coords2Key(
-        new Vec2D(
+        new Vec2(
           col + offset - PLAYGROUND_WIDTH / 2,
           -row + PLAYGROUND_HEIGHT
         )
@@ -46,27 +46,27 @@ export function createBubbleGrid(): BubbleGrid {
   return bubbleGrid;
 }
 
-export function math2Canvas(vector: Vec2D): Vec2D {
-  return new Vec2D(
+export function math2Canvas(vector: Vec2): Vec2 {
+  return new Vec2(
     (2 * SCALE) * (vector.x + (PLAYGROUND_WIDTH / 2)),
     (2 * SCALE) * (-vector.y + PLAYGROUND_HEIGHT),
   );
 }
 
-export function canvas2Math(vector: Vec2D): Vec2D {
-  const convertedCoord = new Vec2D(
+export function canvas2Math(vector: Vec2): Vec2 {
+  const convertedCoord = new Vec2(
     vector.x / (2 * SCALE) - PLAYGROUND_WIDTH / 2,
     -vector.y / (2 * SCALE) + PLAYGROUND_HEIGHT,
   );
   return convertedCoord;
 }
 
-export function key2Coords(index: string): Vec2D {
+export function key2Coords(index: string): Vec2 {
   const [x, y] = index.split(' ').map(c => parseFloat(c));
-  return new Vec2D(x, y);
+  return new Vec2(x, y);
 }
 
-export function coords2Key(coord: Vec2D): string {
+export function coords2Key(coord: Vec2): string {
   return `${coord.x} ${coord.y}`;
 }
 

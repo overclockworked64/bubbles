@@ -7,7 +7,7 @@ import {
   canvas2Math,
   math2Canvas,
   pickRandomColor,
-  Vec2D,
+  Vec2,
 } from "./util";
 
 export const SCALE = 10;
@@ -92,7 +92,7 @@ class BubbleShooter {
   }
 
   private drawGun() {
-    const initialPosition = math2Canvas(new Vec2D(0, 0));
+    const initialPosition = math2Canvas(new Vec2(0, 0));
     const gunPosition = math2Canvas(
       this.gun.coords.scalarDiv(
         this.gun.coords.length()
@@ -123,7 +123,7 @@ class BubbleShooter {
     this.ctx.closePath();
   }
 
-  public getSurroundingBubbles(coord: Vec2D, keepOnly?: Color) {
+  public getSurroundingBubbles(coord: Vec2, keepOnly?: Color) {
     const surroundingBubbles: BubbleGrid = {};
 
     for (const [bubbleKey, color] of Object.entries(this.bubbles)) {
@@ -170,7 +170,7 @@ class BubbleShooter {
     return surroundingBubbles;
   }
 
-  public explode(coord: Vec2D) {
+  public explode(coord: Vec2) {
     /*
       First we have to find the bubbles that surround the
       coordinate where the explosion happens.
@@ -219,18 +219,18 @@ class BubbleShooter {
 }
 
 class Bullet {
-  public coords: Vec2D;
+  public coords: Vec2;
   public color: Color;
-  public wantedLandingPosition: Vec2D;
+  public wantedLandingPosition: Vec2;
 
   private game: BubbleShooter;
 
 
   constructor(game: BubbleShooter) {
     this.game = game;
-    this.coords = new Vec2D(0, 0.5);
+    this.coords = new Vec2(0, 0.5);
     this.color = pickRandomColor();
-    this.wantedLandingPosition = new Vec2D(0, 0);
+    this.wantedLandingPosition = new Vec2(0, 0);
   }
 
   private async land() {
@@ -264,7 +264,7 @@ class Bullet {
 
   public async shoot() {
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-    const gunOrigin = new Vec2D(0, 0);
+    const gunOrigin = new Vec2(0, 0);
 
     let directionVector = this.game.gun.coords.sub(gunOrigin);
     directionVector = directionVector.scalarDiv(directionVector.length());
@@ -308,24 +308,24 @@ class Bullet {
 }
 
 class Gun {
-  public coords: Vec2D;
+  public coords: Vec2;
 
   constructor() {
-    this.coords =  new Vec2D(0, 1);  
+    this.coords =  new Vec2(0, 1);  
   }
 
-  public rotate(coords: Vec2D) {
+  public rotate(coords: Vec2) {
     const gunMathCoords = canvas2Math(coords);
     const angle = Math.atan2(gunMathCoords.y, gunMathCoords.x);
     
-    this.coords = new Vec2D(Math.cos(angle), Math.sin(angle));
+    this.coords = new Vec2(Math.cos(angle), Math.sin(angle));
   }
 }
 
 const main = () => {
   const game = new BubbleShooter();
   document.addEventListener('mousemove', event => {
-    game.gun.rotate(new Vec2D(event.offsetX, event.offsetY));
+    game.gun.rotate(new Vec2(event.offsetX, event.offsetY));
     game.reDraw();
   });
   document.addEventListener('mousedown', () => {
