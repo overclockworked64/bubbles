@@ -54,11 +54,10 @@ export function math2Canvas(vector: Vec2): Vec2 {
 }
 
 export function canvas2Math(vector: Vec2): Vec2 {
-  const convertedCoord = new Vec2(
+  return new Vec2(
     vector.x / (2 * SCALE) - PLAYGROUND_WIDTH / 2,
     -vector.y / (2 * SCALE) + PLAYGROUND_HEIGHT,
   );
-  return convertedCoord;
 }
 
 export function key2Coords(index: string): Vec2 {
