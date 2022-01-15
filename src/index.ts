@@ -1,4 +1,3 @@
-import "./seed.js";
 import * as _ from "lodash";
 import { 
   BubbleGrid,
